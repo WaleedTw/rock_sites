@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}
+  {% if request.LANGUAGE_CODE == "ar" %}{{ place.name_ar }}{% else %}{{ place.name_en }}{% endif %}
+{% endblock %}
+
+{% block content %}
+  <div class="page-head">
+    <a class="back" href="{% url 'places:list' %}">
+      <span class="back-arrow">
+        {% if request.LANGUAGE_CODE == "ar" %}→{% else %}←{% endif %}
+      </span>
+      <span class="back-text">
+        {% if request.LANGUAGE_CODE == "ar" %}رجوع{% else %}{% trans "Back" %}{% endif %}
+      </span>
+    </a>
+  </div>
+
+  <div class="detail">
+
+    <!-- Left -->
+    <div class="panel">
+      <div class="cover" id="coverBox">
+        {% if place.main_image %}
+          <img id="coverImg" src="{{ place.main_image.url }}" alt="">
+        {% else %}
+          <div class="noimg">{% trans "No image available" %}</div>
+        {% endif %}
+      </div>
+
+      <div class="place-title">
+        {% if request.LANGUAGE_CODE == "ar" %}{{ place.name_ar }}{% else %}{{ place.name_en }}{% endif %}
+      </div>
+
+      <div class="place-region">
+        {% if request.LANGUAGE_CODE == "ar" %}{{ place.region_ar }}{% else %}{{ place.region_en }}{% endif %}
+      </div>
+
+      <div class="place-desc">
+        {% if request.LANGUAGE_CODE == "ar" %}
+          {{ place.description_ar|linebreaksbr }}
+        {% else %}
+          {{ place.description_en|linebreaksbr }}
+        {% endif %}
+      </div>
+
+      {% if place.distance_info_ar or place.distance_info_en %}
+        <div style="margin-top:12px;border-top:1px solid rgba(255,255,255,.12);padding-top:10px;">
+          <strong>
+            {% if request.LANGUAGE_CODE == "ar" %}حالة الطريق{% else %}{% trans "Road Status" %}{% endif %}:
+          </strong>
+          <div style="margin-top:6px;color:rgba(229,231,235,.85);">
+            {% if request.LANGUAGE_CODE == "ar" %}{{ place.distance_info_ar }}{% else %}{{ place.distance_info_en }}{% endif %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Right -->
+    <div class="panel">
+      <h3 style="margin:0 0 10px;">
+        {% if request.LANGUAGE_CODE == "ar" %}الموقع{% else %}{% trans "Location" %}{% endif %}
+      </h3>
+
+      <div class="loc-grid">
+        <div class="loc-card">
+          <div class="loc-label">
+            {% if request.LANGUAGE_CODE == "ar" %}خط العرض{% else %}{% trans "Latitude" %}{% endif %}
+          </div>
+          <div class="loc-value">{{ place.latitude|default:"—" }}</div>
+        </div>
+        <div class="loc-card">
+          <div class="loc-label">
+            {% if request.LANGUAGE_CODE == "ar" %}خط الطول{% else %}{% trans "Longitude" %}{% endif %}
+          </div>
+          <div class="loc-value">{{ place.longitude|default:"—" }}</div>
+        </div>
+      </div>
+
+      {% if place.latitude and place.longitude %}
+        <a class="map-btn" href="{{ place.google_maps_url }}" target="_blank" rel="noopener">
+          📍 {% if request.LANGUAGE_CODE == "ar" %}افتح في قوقل ماب{% else %}{% trans "Open in Google Maps" %}{% endif %}
+        </a>
+      {% else %}
+        <p style="margin-top:12px;color:rgba(229,231,235,.72);">
+          {% if request.LANGUAGE_CODE == "ar" %}لا توجد إحداثيات.{% else %}{% trans "No coordinates provided." %}{% endif %}
+        </p>
+      {% endif %}
+
+      <!-- ===== Gallery Section ===== -->
+      {% if place.images.all %}
+        <h3 style="margin:20px 0 10px;">
+          {% if request.LANGUAGE_CODE == "ar" %}المزيد من الصور{% else %}Gallery{% endif %}
+        </h3>
+        <div class="gallery-grid">
+          {% for img in place.images.all %}
+            <div class="gallery-item">
+              <img src="{{ img.image.url }}" alt="{% if request.LANGUAGE_CODE == 'ar' %}{{ img.caption_ar }}{% else %}{{ img.caption_en }}{% endif %}" class="gallery-img">
+              {% if img.caption_ar or img.caption_en %}
+                <div class="gallery-caption">
+                  {% if request.LANGUAGE_CODE == "ar" %}{{ img.caption_ar }}{% else %}{{ img.caption_en }}{% endif %}
+                </div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox">
+    <img id="lightboxImg" alt="">
+  </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // ==== Lightbox (يدعم جميع الصور) ====
+  function openLightbox(src) {
+    const lb = document.getElementById('lightbox');
+    const lbImg = document.getElementById('lightboxImg');
+    if (lb && lbImg) {
+      lbImg.src = src;
+      lb.classList.add('open');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const lb = document.getElementById('lightbox');
+
+    // إغلاق عند النقر على الخلفية
+    lb.addEventListener('click', function(e) {
+      if (e.target === lb) {
+        lb.classList.remove('open');
+      }
+    });
+
+    // إغلاق بالضغط على Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        lb.classList.remove('open');
+      }
+    });
+
+    // ربط صورة الغلاف
+    const coverImg = document.getElementById('coverImg');
+    if (coverImg) {
+      coverImg.parentElement.addEventListener('click', function() {
+        openLightbox(coverImg.src);
+      });
+    }
+
+    // ربط جميع صور المعرض
+    const galleryItems = document.querySelectorAll('.gallery-img');
+    galleryItems.forEach(img => {
+      img.addEventListener('click', function(e) {
+        e.stopPropagation();
+        openLightbox(this.src);
+      });
+    });
+  });
+</script>
+{% endblock %}

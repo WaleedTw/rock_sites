@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="hero-tuwaiq">
+  <h1>
+    {% if request.LANGUAGE_CODE == "ar" %}
+      25 تشكيلًا صخريًا في المملكة العربية السعودية
+    {% else %}
+      25 rock formations in Saudi Arabia
+    {% endif %}
+  </h1>
+  <p>
+    {% if request.LANGUAGE_CODE == "ar" %}
+      اختر موقعًا لعرض التفاصيل والصور
+    {% else %}
+      Browse places and view details & images
+    {% endif %}
+  </p>
+</div>
+
+<div class="grid">
+  {% for place in places %}
+    <a class="card" href="{% url 'places:detail' place.slug %}">
+      {% if place.main_image %}
+<div class="thumb thumb-bg"
+     style="
+       background-image:url('{{ place.main_image.url }}');
+       background-size: cover; 
+       background-repeat: no-repeat;
+       background-position: 50% 100%;
+     ">
+</div>
+      {% else %}
+        <div class="thumb">
+          <div class="noimg">{% trans "No image available" %}</div>
+        </div>
+      {% endif %}
+
+      <div class="card-body">
+        <h3 class="name">
+          {% if request.LANGUAGE_CODE == "ar" %}{{ place.name_ar }}{% else %}{{ place.name_en }}{% endif %}
+        </h3>
+        <div class="meta">
+          <span class="badge">
+            {% if request.LANGUAGE_CODE == "ar" %}{{ place.region_ar }}{% else %}{{ place.region_en }}{% endif %}
+          </span>
+        </div>
+      </div>
+    </a>
+  {% empty %}
+    <div class="hero" style="margin-top:16px;">
+      {% trans "No places found." %}
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}
