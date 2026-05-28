@@ -54,6 +54,6 @@ The application allows administrators to add and organize rock sites with:
 
 Users can browse locations and open them directly in Google Maps.
 
-## 👨‍💻 Developer
+##  Developer
 
 Developed by Waleed Altuwaijri
